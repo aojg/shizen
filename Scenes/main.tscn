@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=7 format=2]
 
-[ext_resource path="res://Code/CameraController.gd" type="Script" id=1]
+[ext_resource path="res://Code/PlanetController.gd" type="Script" id=1]
+[ext_resource path="res://Code/CameraController.gd" type="Script" id=2]
 
 [sub_resource type="SpatialMaterial" id=1]
 albedo_color = Color( 0.545098, 0.462745, 0.462745, 0.368627 )
@@ -8,6 +9,8 @@ metallic = 0.5
 
 [sub_resource type="CubeMesh" id=2]
 material = SubResource( 1 )
+
+[sub_resource type="BoxShape" id=4]
 
 [sub_resource type="Environment" id=3]
 background_mode = 1
@@ -20,18 +23,19 @@ ambient_light_color = Color( 1, 1, 1, 1 )
 transform = Transform( 0.853553, -0.146447, 0.5, 0.5, 0.5, -0.707107, -0.146447, 0.853553, 0.5, 0, 0, 0 )
 light_color = Color( 0.282353, 0.615686, 0.427451, 1 )
 
-[node name="MeshInstance" type="MeshInstance" parent="."]
+[node name="StaticBody" type="StaticBody" parent="."]
+script = ExtResource( 1 )
+
+[node name="MeshInstance" type="MeshInstance" parent="StaticBody"]
 mesh = SubResource( 2 )
 material/0 = null
+
+[node name="CollisionShape" type="CollisionShape" parent="StaticBody"]
+shape = SubResource( 4 )
 
 [node name="CameraContainer" type="Spatial" parent="."]
 
 [node name="Camera" type="Camera" parent="CameraContainer"]
 transform = Transform( -0.998308, 0, -0.0581441, 0, 1, 0, 0.0581441, 0, -0.998308, 0, 0, -5 )
 environment = SubResource( 3 )
-script = ExtResource( 1 )
-
-[node name="TextEdit" type="TextEdit" parent="."]
-margin_right = 216.0
-margin_bottom = 39.0
-text = "unnamed project - v0.01"
+script = ExtResource( 2 )
