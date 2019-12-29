@@ -24,6 +24,9 @@ func _physics_process(delta: float) -> void:
 		foo.translate(get_object_under_mouse().get("position"))
 		var dir: Vector3 = normal.cross(Vector3.RIGHT)
 		foo.look_at(foo.translation + dir * 100, normal)
+		foo.set_random_traits()
+		foo.set_mesh()
+		get_parent().get_parent().num_entities += 1
 		
 	if Input.is_action_pressed("move_right"):
 		get_parent().rotate_object_local(Vector3.UP, MOVE_SPEED * delta)
