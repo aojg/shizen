@@ -6,14 +6,32 @@ var crop_timer: float = 0.0
 var death_time: float = 0.5
 
 #CROP PROPERTIES
-var growth_rate: float = 0.5
-var perfect_temp: float = 15
+var max_growth_rate: float = 0.5
+var ideal_temperature: float = 15
+var ideal_humidity: float = 0.0
 
 var mutation_chance: float = 0.01
+
+var properties_arr = [ideal_temperature, ideal_humidity]
+var weightings_arr = [0.5, 0.5]
 
 func _ready() -> void:
 	death_time = rand_range(2, 3)
 	get_parent().crop_arr.append(self)
+	print(set_random_weightings(properties_arr))
+
+func set_random_weightings(prop_arr):
+	var remaining_prob: float = 1.0
+	var result = []
+	for i in range(prop_arr.size()):
+		if i == prop_arr.size() - 1:
+			result.append(remaining_prob)
+			break
+		else:
+			var prob: float = rand_range(0.0, remaining_prob)
+			result.append(prob)
+			remaining_prob -= prob
+	return result	
 		
 func set_mesh() -> void:
 	var leaves: SpatialMaterial = SpatialMaterial.new()
@@ -22,16 +40,18 @@ func set_mesh() -> void:
 	
 	var red: Color = Color(1, 0, 0)
 	var blue: Color = Color(0, 0, 1)
-	var c: Color = blue.linear_interpolate(red, perfect_temp / 30)
+	var c: Color = blue.linear_interpolate(red, 30.0)
 	leaves.albedo_color = c
 	$MeshInstance.set_surface_material(0, leaves)
 	$MeshInstance.set_surface_material(1, bark)
 	
 func set_traits(s: Spatial) -> void:
-	if (randf() < mutation_chance):
-		s.perfect_temp = perfect_temp * (1.0 + rand_range(-0.5, 0.5))
+	if randf() < mutation_chance:
+		s.ideal_temperature *= (1.0 + rand_range(-0.5, 0.5))
+		s.ideal_humidity *= (1.0 + rand_range(-10, 10))
 	else:
-		s.perfect_temp = perfect_temp * (1.0 + rand_range(-0.05, 0.05))
+		s.ideal_temperature *= (1.0 + rand_range(-0.05, 0.05))
+		s.ideal_humidity *= (1.0 + rand_range(-1, 1))
 
 #Handles behaviour when a crop is set to die.
 func reproduce(max_angle: float, max_seeds: int) -> void:
@@ -54,8 +74,8 @@ func reproduce(max_angle: float, max_seeds: int) -> void:
 	kill()
 
 func can_reproduce() -> bool:
-	var temp_delta: float = abs(perfect_temp - get_parent().temperature)
-	var prob: float = 1 - (temp_delta / perfect_temp)
+	var temp_delta: float = ideal_temperature - get_parent().temperature
+	var prob: float = 1 - (temp_delta)
 	if randf() > prob:
 		return false
 	return true
@@ -67,12 +87,15 @@ func kill() -> void:
 	get_parent().crop_arr.remove(i)
 	queue_free() #Queue for deletion.
 
+func get_growth_rate(mgr: float) -> void:
+	pass
+
 func grow_crop(timer: float, delta: float) -> void:
 	#If there are future stages available
 	if timer < death_time:
-		scale += Vector3.ONE * growth_rate * delta
+		scale += Vector3.ONE * max_growth_rate * delta
 	else:
-		if randf() < 0.05:
+		if randf() < 0.1:
 			reproduce(30, 2)
 		else:
 			reproduce(30, 1)
