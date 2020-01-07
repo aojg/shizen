@@ -7,6 +7,7 @@ var death_time: float = 0.5
 
 #CROP PROPERTIES
 var max_growth_rate: float = 0.5
+var crop_color: Color = Color(0, 0, 0)
 var ideal_temperature: float = 15
 var ideal_humidity: float = 0.0
 
@@ -18,7 +19,6 @@ var weightings_arr = [0.5, 0.5]
 func _ready() -> void:
 	death_time = rand_range(2, 3)
 	get_parent().crop_arr.append(self)
-	print(set_random_weightings(properties_arr))
 
 func set_random_weightings(prop_arr):
 	var remaining_prob: float = 1.0
@@ -37,15 +37,14 @@ func set_mesh() -> void:
 	var leaves: SpatialMaterial = SpatialMaterial.new()
 	var bark: SpatialMaterial = SpatialMaterial.new()
 	bark.albedo_color = Color(1, 1, 1)
-	
-	var red: Color = Color(1, 0, 0)
-	var blue: Color = Color(0, 0, 1)
-	var c: Color = blue.linear_interpolate(red, 30.0)
-	leaves.albedo_color = c
+	if crop_color == Color(0, 0, 0):
+		crop_color = Color(randf(), randf(), randf())
+	leaves.albedo_color = crop_color
 	$MeshInstance.set_surface_material(0, leaves)
 	$MeshInstance.set_surface_material(1, bark)
 	
 func set_traits(s: Spatial) -> void:
+	s.crop_color = Color(crop_color.r + rand_range(-0.01, 0.01), crop_color.g + rand_range(-0.01, 0.01), crop_color.b + rand_range(-0.01, 0.01))
 	if randf() < mutation_chance:
 		s.ideal_temperature *= (1.0 + rand_range(-0.5, 0.5))
 		s.ideal_humidity *= (1.0 + rand_range(-10, 10))
@@ -75,7 +74,7 @@ func reproduce(max_angle: float, max_seeds: int) -> void:
 
 func can_reproduce() -> bool:
 	var temp_delta: float = ideal_temperature - get_parent().temperature
-	var prob: float = 1 - (temp_delta)
+	var prob: float = 1 - (temp_delta / ideal_temperature)
 	if randf() > prob:
 		return false
 	return true

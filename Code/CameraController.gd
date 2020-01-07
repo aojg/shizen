@@ -18,9 +18,10 @@ func get_object_under_mouse():
 
 func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("left_click") && get_object_under_mouse().get("position") != null:
+		print(get_object_under_mouse().get("position"))
 		var foo: Spatial = crop.instance()
 		var normal: Vector3 = get_object_under_mouse().get("normal")
-		get_parent().get_parent().add_child(foo)
+		get_node("/root/Universe").add_child(foo)
 		foo.translate(get_object_under_mouse().get("position"))
 		var dir: Vector3 = normal.cross(Vector3.RIGHT)
 		foo.look_at(foo.translation + dir * 100, normal)
