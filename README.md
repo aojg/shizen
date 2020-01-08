@@ -1,5 +1,9 @@
 # shizen
 
+## Version 0.03a
+
+* Planet mesh's triangles can now be painted.
+
 ## Alpha version 0.02
 
 * Colour is now a cosmetic property (i.e. it doesn't affect a crop's growing properties).
