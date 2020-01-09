@@ -1,99 +1,96 @@
 extends StaticBody
 
+var crop: Resource = load("res://Scenes/Crop.tscn")
 var tri_centers: Array = []
 
-const phi: float = 1.618033988749895
+const X: float = 0.525731112119133606 
+const Z: float = 0.850650808352039932
 var cols: PoolColorArray = PoolColorArray()		
 var verts: PoolVector3Array = PoolVector3Array()	
 
 var icosphere_verts: Array = [
+	Vector3(-X, 0.0, Z), 
+	Vector3(0.0, Z, X),
+	Vector3(X, 0.0, Z),
 
-	Vector3(0, 1, phi),
-	Vector3(0, -1, phi),
-	Vector3(-phi, 0, 1),
+	Vector3(-X, 0.0, Z),
+	Vector3(-Z, X, 0.0),
+	Vector3(0.0, Z, X),
 
-	Vector3(0, -1, phi),
-	Vector3(-1, -phi, 0),
-	Vector3(-phi, 0, 1),
+	Vector3(-Z, X, 0.0),
+	Vector3(0.0, Z, -X),
+	Vector3(0.0, Z, X),
 
-	Vector3(0, 1, phi),
-	Vector3(-phi, 0, 1),
-	Vector3(-1, phi, 0),
+	Vector3(0.0, Z, X),
+	Vector3(0.0, Z, -X),
+	Vector3(Z, X, 0.0),
 
-	Vector3(-phi, 0, 1),
-	Vector3(-phi, 0, -1),
-	Vector3(-1, phi, 0),
+	Vector3(0.0, Z, X),
+	Vector3(Z, X, 0.0),
+	Vector3(X, 0.0, Z),
 
-	Vector3(0, 1, phi),
-	Vector3(0, -1, phi),
-	Vector3(-phi, 0, 1),
+	Vector3(Z, X, 0.0),
+	Vector3(Z, -X, 0.0),
+	Vector3(X, 0.0, Z),
 
-	Vector3(-phi, 0, 1),
-	Vector3(-1, -phi, 0),
-	Vector3(-phi, 0, -1),
+	Vector3(Z, X, 0.0),
+	Vector3(X, 0.0, -Z),
+	Vector3(Z, -X, 0.0),
 
-	Vector3(0, -1, phi),
-	Vector3(1, -phi, 0),
-	Vector3(-1, -phi, 0),
+	Vector3(0.0, Z, -X),
+	Vector3(X, 0.0, -Z),
+	Vector3(Z, X, 0.0),
+	
+	Vector3(0.0, Z, -X),
+	Vector3(-X, 0.0, -Z),
+	Vector3(X, 0.0, -Z),
 
-	Vector3(0, -1, phi),
-	Vector3(phi, 0, 1),
-	Vector3(1, -phi, 0),
+	Vector3(-X, 0.0, -Z),
+	Vector3(0.0, -Z, -X),
+	Vector3(X, 0.0, -Z),
 
-	Vector3(phi, 0 ,1),
-	Vector3(phi, 0, -1),
-	Vector3(1, -phi, 0),
+	Vector3(0.0, -Z, -X),
+	Vector3(Z, -X, 0.0),
+	Vector3(X, 0.0, -Z),
+	
+	Vector3(0.0, -Z, -X),
+	Vector3(0.0, -Z, X),
+	Vector3(Z, -X, 0.0),
 
-	Vector3(1, -phi, 0),
-	Vector3(phi, 0, -1),
-	Vector3(0, -1, -phi),
+	Vector3(0.0, -Z, -X),
+	Vector3(-Z, -X, 0.0),
+	Vector3(0.0, -Z, X),
 
-	Vector3(1, -phi, 0),
-	Vector3(0, -1, -phi),
-	Vector3(-1, -phi, 0),
+	Vector3(-Z, -X, 0.0),
+	Vector3(-X, 0.0, Z),
+	Vector3(0.0, -Z, X),
+	
+	Vector3(-X, 0.0, Z),
+	Vector3(X, 0.0, Z),
+	Vector3(0.0, -Z, X),
 
-	Vector3(0, 1, phi),
-	Vector3(1, phi, 0),
-	Vector3(phi, 0, 1),
+	Vector3(0.0, -Z, X),
+	Vector3(X, 0.0, Z),
+	Vector3(Z, -X, 0.0),
 
-	Vector3(0, 1, phi),
-	Vector3(-1, phi, 0),
-	Vector3(1, phi, 0),
+	Vector3(-Z, X, 0.0),
+	Vector3(-X, 0.0, Z),
+	Vector3(-Z, -X, 0.0),
 
-	Vector3(1, phi, 0),
-	Vector3(-1, phi, 0),
-	Vector3(0, 1, -phi),
+	Vector3(-Z, X, 0.0),
+	Vector3(-Z, -X, 0.0),
+	Vector3(-X, 0.0, -Z),
 
-	Vector3(0, 1, -phi),
-	Vector3(phi, 0, -1),
-	Vector3(1, phi, 0),
+	Vector3(-Z, X, 0.0),
+	Vector3(-X, 0.0, -Z),
+	Vector3(0.0, Z, -X),
 
-	Vector3(phi, 0, 1),
-	Vector3(1, phi, 0),
-	Vector3(phi, 0, -1),
+	Vector3(0.0, -Z, -X),
+	Vector3(-X, 0.0, -Z),
+	Vector3(-Z, -X, 0.0)
+]	
 
-	Vector3(0, 1, phi),
-	Vector3(phi, 0, 1),
-	Vector3(0, -1, phi),
-
-	Vector3(0, 1, -phi),
-	Vector3(0, -1, -phi),
-	Vector3(phi, 0, -1),
-
-	Vector3(-1, phi, 0),
-	Vector3(-phi, 0, -1),
-	Vector3(0, 1, -phi),
-
-	Vector3(-phi, 0, -1),
-	Vector3(0, -1, -phi),
-	Vector3(0, 1, -phi),
-
-	Vector3(-phi, 0, -1),
-	Vector3(-1, -phi, 0),
-	Vector3(0, -1, -phi)
-]
-
-func create_icosphere(arrays) -> void:
+func create_icosphere(arrays: Array) -> void:
 	#Configuring material
 	var mat: SpatialMaterial = SpatialMaterial.new()
 	mat.vertex_color_use_as_albedo = true
@@ -110,6 +107,29 @@ func create_icosphere(arrays) -> void:
 
 	add_child(mesh_inst)
 	mesh_inst.create_trimesh_collision()
+
+#Returns a position Vector3 holding the center of the triangle at index idx.
+func get_center_pos_idx(idx: int) -> Vector3:	
+	return tri_centers[idx]
+
+#Returns the indices of the 3 triangles adjacent to the triangle at tri_idx
+func get_adj_tri_indices(tri_idx: int, v_arr: Array) -> Array:
+	#Array of triangle vertices.
+	var adj_tri_indices: Array = []
+	var tris_found: int = 0
+	var tri_verts: Array = [v_arr[tri_idx*3], v_arr[tri_idx*3+1], v_arr[tri_idx*3+2]] 
+	for i in range(0, v_arr.size(), 3):
+		if tris_found == 3:
+			break
+		else:	
+			var count: int = 0
+			for j in range(3):
+				if v_arr[i+j] == tri_verts[0] || v_arr[i+j] == tri_verts[1] || v_arr[i+j] == tri_verts[2]:
+					count += 1
+			if count == 2:
+				adj_tri_indices.append(i)
+				tris_found += 1	
+	return adj_tri_indices			
 
 func update_icosphere(vert_arr: PoolVector3Array, col_arr: PoolColorArray) -> void:
 	var arr_mesh: ArrayMesh = ArrayMesh.new()
@@ -128,7 +148,6 @@ func update_icosphere(vert_arr: PoolVector3Array, col_arr: PoolColorArray) -> vo
 
 
 func find_closest_tri(hit: Vector3, tri_centers: Array) -> int:
-
 	var dist_deltas: Array = []
 	for i in range(tri_centers.size()):
 		dist_deltas.append(tri_centers[i].distance_squared_to(hit))
@@ -137,6 +156,7 @@ func find_closest_tri(hit: Vector3, tri_centers: Array) -> int:
 	for i in range(1, dist_deltas.size()):
 		if dist_deltas[i] < dist_deltas[smallest_dist_index]:
 			smallest_dist_index = i
+	print(smallest_dist_index)		
 	return smallest_dist_index		
 	
 func subdivide_face(face_verts):
@@ -177,6 +197,11 @@ func subdivide_triangle(tri_verts):
 	var mp2: Vector3 = ((tri_verts[1] + tri_verts[2]) / 2.0).normalized()
 	var mp3: Vector3 = ((tri_verts[2] + tri_verts[0]) / 2.0).normalized()
 
+	#Subdivided triangle 4 (centre triangle)
+	new_tri_verts.append(mp1)
+	new_tri_verts.append(mp2)
+	new_tri_verts.append(mp3)
+
 	#Subdivided triangle 1
 	new_tri_verts.append(tri_verts[0].normalized())
 	new_tri_verts.append(mp1)
@@ -190,11 +215,6 @@ func subdivide_triangle(tri_verts):
 	#Subdivided triangle 3
 	new_tri_verts.append(mp2)
 	new_tri_verts.append(tri_verts[2].normalized())
-	new_tri_verts.append(mp3)
-
-	#Subdivided triangle 4 (centre triangle)
-	new_tri_verts.append(mp1)
-	new_tri_verts.append(mp2)
 	new_tri_verts.append(mp3)
 
 	return new_tri_verts
@@ -212,16 +232,14 @@ func _ready() -> void:
 	
 	for i in range(0, verts.size()):
 		verts[i] *= 20	
-	verts = boost_vertices(verts, 0.05, 1.2)
+	#verts = boost_vertices(verts, 0.05, 1.2)
 	tri_centers = find_tri_centers(verts)
 
-
-	for i in range(0, verts.size(), 3):
-		var c: Color = Color.from_hsv(0, 0, randf())
-		cols.append(c)
-		cols.append(c)
-		cols.append(c)
-
+	for i in range(0,verts.size(),3):
+		var col: Color = Color.from_hsv(0, 0.0, randf())
+		cols.append(col)
+		cols.append(col)
+		cols.append(col)
 	#Settings up arrays
 
 	var arrays = []
@@ -231,16 +249,31 @@ func _ready() -> void:
 
 	create_icosphere(arrays)
 
-
 func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("left_click"):
-		print(get_node("Camera Container/Camera").get_object_under_mouse().get("position"))
 		var hit: Vector3 = get_node("Camera Container/Camera").get_object_under_mouse().get("position")
+		var hit_normal: Vector3 = get_node("Camera Container/Camera").get_object_under_mouse().get("normal")
 		if (hit != null):
 			var idx: int = find_closest_tri(hit, tri_centers)
 			var rand_col: Color = Color(randf(), randf(), randf())
+
 			cols[idx*3] = rand_col
 			cols[idx*3+1] = rand_col
 			cols[idx*3+2] = rand_col
+
+			var neighbours: Array = get_adj_tri_indices(idx, verts)
+			for i in range(neighbours.size()):
+				var c: Color = Color(randf(), randf(), randf())
+				cols[neighbours[i]] = c	
+				cols[neighbours[i]+1] = c
+				cols[neighbours[i]+2] = c
+
 			update_icosphere(verts, cols)
+
+			#var foo: Spatial = crop.instance()
+			#get_node("/root/Universe").add_child(foo)
+			#foo.translate(get_center_pos_idx(idx))
+			#var dir: Vector3 = hit_normal.cross(Vector3.RIGHT)
+			#foo.look_at(foo.translation + dir * 100, hit_normal)
+			#foo.set_mesh()
 

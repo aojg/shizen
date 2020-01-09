@@ -1,8 +1,7 @@
 extends Camera
 
 const MOVE_SPEED: float = 5.0
-const ZOOM_SPEED: float = 50.0
-var crop: Resource = load("res://Scenes/Crop.tscn")
+const ZOOM_SPEED: float = 200.0
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -18,15 +17,7 @@ func get_object_under_mouse():
 
 func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("left_click") && get_object_under_mouse().get("position") != null:
-		print(get_object_under_mouse().get("position"))
-		var foo: Spatial = crop.instance()
-		var normal: Vector3 = get_object_under_mouse().get("normal")
-		get_node("/root/Universe").add_child(foo)
-		foo.translate(get_object_under_mouse().get("position"))
-		var dir: Vector3 = normal.cross(Vector3.RIGHT)
-		foo.look_at(foo.translation + dir * 100, normal)
-		foo.set_mesh()
-		
+		pass
 	if Input.is_action_pressed("move_right"):
 		get_parent().rotate_object_local(Vector3.UP, MOVE_SPEED * delta)
 	if Input.is_action_pressed("move_left"):

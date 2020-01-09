@@ -13,6 +13,9 @@ var ideal_humidity: float = 0.0
 
 var mutation_chance: float = 0.01
 
+#Holds the index of the triangle the crop is on.
+var current_triangle: int = 0
+
 var properties_arr = [ideal_temperature, ideal_humidity]
 var weightings_arr = [0.5, 0.5]
 
@@ -60,14 +63,14 @@ func reproduce(max_angle: float, max_seeds: int) -> void:
 			var foo: Spatial = crop.instance()
 			get_parent().add_child(foo)
 			#So basis is same as parent node's.
-			foo.rotation = rotation 
-			#Create an axis to rotate foo's position vector around.
-			var rand_axis: Vector3 = rand_range(-1, 1) * foo.transform.basis.x + rand_range(-1, 1) * foo.transform.basis.z
-			rand_axis = rand_axis.normalized()
-			var new_pos: Vector3 = translation.rotated(rand_axis, deg2rad(rand_range(0, max_angle)))
-			var look_dir: Vector3 = new_pos.normalized().cross(Vector3.ONE)
-			foo.translation += new_pos
-			foo.look_at(foo.translation + look_dir * 100, new_pos.normalized()) 
+			#foo.rotation = rotation 
+			##Create an axis to rotate foo's position vector around.
+			#var rand_axis: Vector3 = rand_range(-1, 1) * foo.transform.basis.x + rand_range(-1, 1) * foo.transform.basis.z
+			#rand_axis = rand_axis.normalized()
+			#var new_pos: Vector3 = translation.rotated(rand_axis, deg2rad(rand_range(0, max_angle)))
+			#var look_dir: Vector3 = new_pos.normalized().cross(Vector3.ONE)
+			#foo.translation += new_posa
+			#foo.look_at(foo.translation + look_dir * 100, new_pos.normalized()) 
 			set_traits(foo)
 			foo.set_mesh()
 	kill()
