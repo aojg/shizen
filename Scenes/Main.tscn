@@ -1,7 +1,7 @@
 [gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://Code/WorldController.gd" type="Script" id=1]
-[ext_resource path="res://Scenes/Planet.gd" type="Script" id=2]
+[ext_resource path="res://Code/Icosphere.gd" type="Script" id=2]
 [ext_resource path="res://Code/CameraController.gd" type="Script" id=3]
 [ext_resource path="res://Scenes/UI.tscn" type="PackedScene" id=4]
 
@@ -26,6 +26,7 @@ script = ExtResource( 1 )
 script = ExtResource( 2 )
 
 [node name="Camera Container" type="Spatial" parent="Planet"]
+editor/display_folded = true
 
 [node name="Camera" type="Camera" parent="Planet/Camera Container"]
 transform = Transform( -0.05, 0, 4.39468e-09, 0, 0.05, 0, -4.39468e-09, 0, -0.05, 0, 0, -40 )

@@ -1,5 +1,16 @@
 # shizen
 
+## Version 0.05a
+* Refactored some of the Planet.gd class.
+* Renamed Planet.gd to Icosphere.gd.
+* Renamed the project from 'farm' to 'shizen'.
+* Removed some empty/unused classes from the project.
+* Added a Materials folder to the project.
+
+## Version 0.04a 
+
+* Implemented functionality to locate the neighbouring triangles of a given triangle in the icosphere mesh.
+
 ## Version 0.03a
 
 * Planet mesh's triangles can now be painted.

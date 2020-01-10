@@ -1,14 +1,20 @@
 extends StaticBody
 
 var crop: Resource = load("res://Scenes/Crop.tscn")
+var material: SpatialMaterial = load("res://Materials/Default.tres")
+
+#Vector3 array containing the centres of all mesh triangles.
 var tri_centers: Array = []
+var arr_mesh: ArrayMesh = ArrayMesh.new()
 
 const X: float = 0.525731112119133606 
 const Z: float = 0.850650808352039932
 var cols: PoolColorArray = PoolColorArray()		
 var verts: PoolVector3Array = PoolVector3Array()	
 
-var icosphere_verts: Array = [
+#Vector3 array containing the vertices of an icosphere.
+var icosphere_verts = [
+
 	Vector3(-X, 0.0, Z), 
 	Vector3(0.0, Z, X),
 	Vector3(X, 0.0, Z),
@@ -90,13 +96,8 @@ var icosphere_verts: Array = [
 	Vector3(-Z, -X, 0.0)
 ]	
 
-func create_icosphere(arrays: Array) -> void:
-	#Configuring material
-	var mat: SpatialMaterial = SpatialMaterial.new()
-	mat.vertex_color_use_as_albedo = true
-
+func create_icosphere(arrays: Array, arr_mesh: ArrayMesh, mat: SpatialMaterial) -> void:
 	#Setting up ArrayMesh
-	var arr_mesh: ArrayMesh = ArrayMesh.new()
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 
 	#Setting up MeshInstance
@@ -108,61 +109,63 @@ func create_icosphere(arrays: Array) -> void:
 	add_child(mesh_inst)
 	mesh_inst.create_trimesh_collision()
 
-#Returns a position Vector3 holding the center of the triangle at index idx.
-func get_center_pos_idx(idx: int) -> Vector3:	
-	return tri_centers[idx]
 
-#Returns the indices of the 3 triangles adjacent to the triangle at tri_idx
-func get_adj_tri_indices(tri_idx: int, v_arr: Array) -> Array:
-	#Array of triangle vertices.
-	var adj_tri_indices: Array = []
-	var tris_found: int = 0
-	var tri_verts: Array = [v_arr[tri_idx*3], v_arr[tri_idx*3+1], v_arr[tri_idx*3+2]] 
-	for i in range(0, v_arr.size(), 3):
-		if tris_found == 3:
-			break
-		else:	
-			var count: int = 0
-			for j in range(3):
-				if v_arr[i+j] == tri_verts[0] || v_arr[i+j] == tri_verts[1] || v_arr[i+j] == tri_verts[2]:
-					count += 1
-			if count == 2:
-				adj_tri_indices.append(i)
-				tris_found += 1	
-	return adj_tri_indices			
-
-func update_icosphere(vert_arr: PoolVector3Array, col_arr: PoolColorArray) -> void:
-	var arr_mesh: ArrayMesh = ArrayMesh.new()
-
-	var mat: SpatialMaterial = SpatialMaterial.new()
-	mat.vertex_color_use_as_albedo = true
+func update_icosphere(arr_mesh: ArrayMesh, mat: SpatialMaterial, vert_arr: PoolVector3Array, col_arr: PoolColorArray) -> void:
 	var arrays: Array = []
 	arrays.resize(ArrayMesh.ARRAY_MAX)
 	arrays[ArrayMesh.ARRAY_VERTEX] = vert_arr
 	arrays[ArrayMesh.ARRAY_COLOR] = col_arr
-
+	arr_mesh.surface_remove(0)
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 
 	get_node("IcoMeshInstance").mesh = arr_mesh
 	get_node("IcoMeshInstance").set_surface_material(0, mat)
 
 
-func find_closest_tri(hit: Vector3, tri_centers: Array) -> int:
-	var dist_deltas: Array = []
-	for i in range(tri_centers.size()):
-		dist_deltas.append(tri_centers[i].distance_squared_to(hit))
+#Returns a position Vector3 holding the center of the triangle at index idx.
+func get_center_pos_idx(idx: int) -> Vector3:	
+	return tri_centers[idx]
 
-	var smallest_dist_index: int = 0
-	for i in range(1, dist_deltas.size()):
-		if dist_deltas[i] < dist_deltas[smallest_dist_index]:
-			smallest_dist_index = i
-	print(smallest_dist_index)		
-	return smallest_dist_index		
+
+"""
+Returns an int Array containing the indices of the 3 triangles adjacent to the triangle at tri_idx.
+* tri_idx -- the index of the triangle we are finding the neighbours of.
+* mesh_verts -- Vector3 array containing all vertices in the mesh.
+"""
+func get_adj_tri_indices(tri_idx: int, mesh_verts: Array) -> Array:
+	var adj_tri_indices: Array = []
+	var tris_found: int = 0
+	var tri_verts: Array = [mesh_verts[tri_idx*3], mesh_verts[tri_idx*3+1], mesh_verts[tri_idx*3+2]] 
+	for i in range(0, mesh_verts.size(), 3):
+		if tris_found == 3:
+			break
+		else:	
+			var count: int = 0 #Counts of the number of shared vertices.
+			for j in range(3):
+				#Checking for shared vertices in the current triangle.
+				if mesh_verts[i+j] == tri_verts[0] || mesh_verts[i+j] == tri_verts[1] || mesh_verts[i+j] == tri_verts[2]:
+					count += 1
+			if count == 2: #If 2 vertices are shared between triangles they must be neighbours.
+				adj_tri_indices.append(i)
+				tris_found += 1	
+	return adj_tri_indices			
+
+
+#Returns the index of the triangle centre that is closest to the position hit.
+func find_closest_tri(hit: Vector3, tri_centers: Array) -> int:
+	var idx: int = 0
+	var smallest_dist: float = tri_centers[idx].distance_squared_to(hit)
+	for i in range(tri_centers.size()):
+		var temp: float = tri_centers[i].distance_squared_to(hit)
+		if temp < smallest_dist:
+			idx = i
+			smallest_dist = temp
+	return idx		
 	
 func subdivide_face(face_verts):
-	var new_face_verts = []
+	var new_face_verts: Array = []
 	for i in range(0, face_verts.size(), 3):
-		var verts = []
+		var verts: Array = []
 		verts.append(face_verts[i])
 		verts.append(face_verts[i+1])
 		verts.append(face_verts[i+2])
@@ -178,6 +181,7 @@ func find_tri_centers(verts: Array) -> Array:
 		arr.append((1.0/3.0) * (verts[i] + verts[i+1] + verts[i+2]))
 	return arr
 
+#Iterates over verts with a chance of (prob*100)% to multiply an element by boost
 func boost_vertices(verts: Array, prob: float, boost: float) -> Array:
 	var arr = []
 	for i in range(verts.size()):
@@ -247,7 +251,7 @@ func _ready() -> void:
 	arrays[ArrayMesh.ARRAY_VERTEX] = verts
 	arrays[ArrayMesh.ARRAY_COLOR] = cols
 
-	create_icosphere(arrays)
+	create_icosphere(arrays, arr_mesh, material)
 
 func _physics_process(delta: float) -> void:
 	if Input.is_action_just_pressed("left_click"):
@@ -268,7 +272,7 @@ func _physics_process(delta: float) -> void:
 				cols[neighbours[i]+1] = c
 				cols[neighbours[i]+2] = c
 
-			update_icosphere(verts, cols)
+			update_icosphere(arr_mesh, material, verts, cols)
 
 			#var foo: Spatial = crop.instance()
 			#get_node("/root/Universe").add_child(foo)
