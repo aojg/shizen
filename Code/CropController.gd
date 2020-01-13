@@ -14,14 +14,28 @@ var ideal_humidity: float = 0.0
 var mutation_chance: float = 0.01
 
 #Holds the index of the triangle the crop is on.
-var current_triangle: int = 0
+var tri_idx: int = 0
+var tri_normal: Vector3 = Vector3.ZERO
 
-var properties_arr = [ideal_temperature, ideal_humidity]
-var weightings_arr = [0.5, 0.5]
+var adj_tri_positions: Array = []
+var neighbour_indices: Array = []
 
 func _ready() -> void:
 	death_time = rand_range(2, 3)
 	get_parent().crop_arr.append(self)
+
+
+func init_crop() -> void:
+	var ico: Spatial = get_node("/root/Universe/Icosphere")  
+	self.neighbour_indices = ico.get_adj_tri_indices(self.tri_idx)
+
+	for i in range(self.neighbour_indices.size()):
+		self.adj_tri_positions.append(ico.get_tri_center(self.neighbour_indices[i]))
+
+
+func set_tri_idx(idx: int) -> void:
+	self.tri_idx = idx
+	self.tri_normal = get_node("/root/Universe/Icosphere").get_surface_normal(idx)
 
 func set_random_weightings(prop_arr):
 	var remaining_prob: float = 1.0
@@ -36,6 +50,7 @@ func set_random_weightings(prop_arr):
 			remaining_prob -= prob
 	return result	
 		
+
 func set_mesh() -> void:
 	var leaves: SpatialMaterial = SpatialMaterial.new()
 	var bark: SpatialMaterial = SpatialMaterial.new()
@@ -46,6 +61,7 @@ func set_mesh() -> void:
 	$MeshInstance.set_surface_material(0, leaves)
 	$MeshInstance.set_surface_material(1, bark)
 	
+
 func set_traits(s: Spatial) -> void:
 	s.crop_color = Color(crop_color.r + rand_range(-0.01, 0.01), crop_color.g + rand_range(-0.01, 0.01), crop_color.b + rand_range(-0.01, 0.01))
 	if randf() < mutation_chance:
@@ -55,25 +71,27 @@ func set_traits(s: Spatial) -> void:
 		s.ideal_temperature *= (1.0 + rand_range(-0.05, 0.05))
 		s.ideal_humidity *= (1.0 + rand_range(-1, 1))
 
+
 #Handles behaviour when a crop is set to die.
 func reproduce(max_angle: float, max_seeds: int) -> void:
 	if can_reproduce() == true:
 		for i in range(max_seeds):
-			#If the seed is successful
-			var foo: Spatial = crop.instance()
-			get_parent().add_child(foo)
-			#So basis is same as parent node's.
-			#foo.rotation = rotation 
-			##Create an axis to rotate foo's position vector around.
-			#var rand_axis: Vector3 = rand_range(-1, 1) * foo.transform.basis.x + rand_range(-1, 1) * foo.transform.basis.z
-			#rand_axis = rand_axis.normalized()
-			#var new_pos: Vector3 = translation.rotated(rand_axis, deg2rad(rand_range(0, max_angle)))
-			#var look_dir: Vector3 = new_pos.normalized().cross(Vector3.ONE)
-			#foo.translation += new_posa
-			#foo.look_at(foo.translation + look_dir * 100, new_pos.normalized()) 
-			set_traits(foo)
-			foo.set_mesh()
+			create_crop()
 	kill()
+
+
+func create_crop() -> void:
+	var foo: Spatial = crop.instance()
+	get_parent().add_child(foo)
+	var r: int = randi() % 3
+	foo.set_tri_idx(self.neighbour_indices[r])
+	foo.init_crop()
+	foo.translate(self.adj_tri_positions[r])
+	##Create an axis to rotate foo's position vector around.
+	var look_dir: Vector3 = foo.tri_normal.cross(Vector3.ONE)
+	foo.look_at(foo.translation + look_dir * 100, foo.tri_normal)
+	set_traits(foo)
+	foo.set_mesh()
 
 func can_reproduce() -> bool:
 	var temp_delta: float = ideal_temperature - get_parent().temperature
@@ -82,6 +100,7 @@ func can_reproduce() -> bool:
 		return false
 	return true
 
+
 #To be called when wanting to destroy a crop.
 func kill() -> void:
 	get_child(0).queue_free() #Delete child (timer).
@@ -89,8 +108,10 @@ func kill() -> void:
 	get_parent().crop_arr.remove(i)
 	queue_free() #Queue for deletion.
 
+
 func get_growth_rate(mgr: float) -> void:
 	pass
+
 
 func grow_crop(timer: float, delta: float) -> void:
 	#If there are future stages available
@@ -101,7 +122,8 @@ func grow_crop(timer: float, delta: float) -> void:
 			reproduce(30, 2)
 		else:
 			reproduce(30, 1)
-					
+	
+			
 func _physics_process(delta: float) -> void:
 	crop_timer += delta
 	grow_crop(crop_timer, delta)

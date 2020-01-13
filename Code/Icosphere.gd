@@ -1,4 +1,4 @@
-extends StaticBody
+extends Spatial
 
 var crop: Resource = load("res://Scenes/Crop.tscn")
 var material: SpatialMaterial = load("res://Materials/Default.tres")
@@ -9,6 +9,8 @@ var arr_mesh: ArrayMesh = ArrayMesh.new()
 
 const X: float = 0.525731112119133606 
 const Z: float = 0.850650808352039932
+
+var surface_normals: Array = []
 var cols: PoolColorArray = PoolColorArray()		
 var verts: PoolVector3Array = PoolVector3Array()	
 
@@ -96,10 +98,18 @@ var icosphere_verts = [
 	Vector3(-Z, -X, 0.0)
 ]	
 
+func debug_draw_normals() -> void:
+	var arr: Array = []
+	for i in range(tri_centers.size()):
+		arr.append(tri_centers[i])
+		arr.append(tri_centers[i] + 2*surface_normals[i])
+	get_node("/root/Universe/Line Drawer").draw_lines(arr, Color(1, 0, 0))	
+
 func create_icosphere(arrays: Array, arr_mesh: ArrayMesh, mat: SpatialMaterial) -> void:
 	#Setting up ArrayMesh
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
-
+	calculate_surface_normals()
+	debug_draw_normals()
 	#Setting up MeshInstance
 	var mesh_inst: MeshInstance = MeshInstance.new()
 	mesh_inst.name = "IcoMeshInstance"
@@ -123,32 +133,43 @@ func update_icosphere(arr_mesh: ArrayMesh, mat: SpatialMaterial, vert_arr: PoolV
 
 
 #Returns a position Vector3 holding the center of the triangle at index idx.
-func get_center_pos_idx(idx: int) -> Vector3:	
-	return tri_centers[idx]
+func get_tri_center(idx: int) -> Vector3:	
+	return tri_centers[idx/3]
+
+
+func get_surface_normal(tri_idx: int) -> Vector3:
+	return surface_normals[tri_idx/3]	
 
 
 """
 Returns an int Array containing the indices of the 3 triangles adjacent to the triangle at tri_idx.
 * tri_idx -- the index of the triangle we are finding the neighbours of.
-* mesh_verts -- Vector3 array containing all vertices in the mesh.
+* verts -- Vector3 array containing all vertices in the mesh.
 """
-func get_adj_tri_indices(tri_idx: int, mesh_verts: Array) -> Array:
+func get_adj_tri_indices(tri_idx: int) -> Array:
 	var adj_tri_indices: Array = []
 	var tris_found: int = 0
-	var tri_verts: Array = [mesh_verts[tri_idx*3], mesh_verts[tri_idx*3+1], mesh_verts[tri_idx*3+2]] 
-	for i in range(0, mesh_verts.size(), 3):
+	var tri_verts: Array = [verts[tri_idx], verts[tri_idx+1], verts[tri_idx+2]] 
+	for i in range(0, verts.size(), 3):
 		if tris_found == 3:
 			break
 		else:	
 			var count: int = 0 #Counts of the number of shared vertices.
 			for j in range(3):
 				#Checking for shared vertices in the current triangle.
-				if mesh_verts[i+j] == tri_verts[0] || mesh_verts[i+j] == tri_verts[1] || mesh_verts[i+j] == tri_verts[2]:
+				if verts[i+j] == tri_verts[0] || verts[i+j] == tri_verts[1] || verts[i+j] == tri_verts[2]:
 					count += 1
 			if count == 2: #If 2 vertices are shared between triangles they must be neighbours.
 				adj_tri_indices.append(i)
 				tris_found += 1	
 	return adj_tri_indices			
+
+
+func calculate_surface_normals() -> void:
+	for i in range(0, verts.size(), 3):
+		var u: Vector3 = verts[i+1] - verts[i]
+		var v: Vector3 = verts[i+2] - verts[i]
+		surface_normals.append(v.cross(u).normalized())		
 
 
 #Returns the index of the triangle centre that is closest to the position hit.
@@ -160,7 +181,7 @@ func find_closest_tri(hit: Vector3, tri_centers: Array) -> int:
 		if temp < smallest_dist:
 			idx = i
 			smallest_dist = temp
-	return idx		
+	return idx*3		
 	
 func subdivide_face(face_verts):
 	var new_face_verts: Array = []
@@ -236,7 +257,7 @@ func _ready() -> void:
 	
 	for i in range(0, verts.size()):
 		verts[i] *= 20	
-	#verts = boost_vertices(verts, 0.05, 1.2)
+	verts = boost_vertices(verts, 0.05, 1.2)
 	tri_centers = find_tri_centers(verts)
 
 	for i in range(0,verts.size(),3):
@@ -261,11 +282,11 @@ func _physics_process(delta: float) -> void:
 			var idx: int = find_closest_tri(hit, tri_centers)
 			var rand_col: Color = Color(randf(), randf(), randf())
 
-			cols[idx*3] = rand_col
-			cols[idx*3+1] = rand_col
-			cols[idx*3+2] = rand_col
+			cols[idx] = rand_col
+			cols[idx+1] = rand_col
+			cols[idx+2] = rand_col
 
-			var neighbours: Array = get_adj_tri_indices(idx, verts)
+			var neighbours: Array = get_adj_tri_indices(idx)
 			for i in range(neighbours.size()):
 				var c: Color = Color(randf(), randf(), randf())
 				cols[neighbours[i]] = c	
@@ -274,10 +295,12 @@ func _physics_process(delta: float) -> void:
 
 			update_icosphere(arr_mesh, material, verts, cols)
 
-			#var foo: Spatial = crop.instance()
-			#get_node("/root/Universe").add_child(foo)
-			#foo.translate(get_center_pos_idx(idx))
-			#var dir: Vector3 = hit_normal.cross(Vector3.RIGHT)
-			#foo.look_at(foo.translation + dir * 100, hit_normal)
-			#foo.set_mesh()
+			var foo: Spatial = crop.instance()
+			get_node("/root/Universe").add_child(foo)
+			foo.set_tri_idx(idx)
+			foo.init_crop()
+			foo.translate(get_tri_center(idx))
+			var dir: Vector3 = foo.tri_normal.cross(Vector3.ONE)
+			foo.look_at(foo.translation + dir * 100, foo.tri_normal)
+			foo.set_mesh()
 

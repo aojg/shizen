@@ -1,5 +1,11 @@
 # shizen
 
+## v0.06a
+
+* Crop children can now grow on the adjacent triangles to their parent.
+* Fixed an issue with normals on crop children. They now can now grow properly on irregular terrain.
+* Created a LineDrawer spatial that allows to draw 3D lines for debug purposes.
+
 ## Version 0.05a
 * Refactored some of the Planet.gd class.
 * Renamed Planet.gd to Icosphere.gd.

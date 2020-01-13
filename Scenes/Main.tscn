@@ -1,55 +1,31 @@
-[gd_scene load_steps=9 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://Code/WorldController.gd" type="Script" id=1]
 [ext_resource path="res://Code/Icosphere.gd" type="Script" id=2]
 [ext_resource path="res://Code/CameraController.gd" type="Script" id=3]
 [ext_resource path="res://Scenes/UI.tscn" type="PackedScene" id=4]
+[ext_resource path="res://Code/LineDrawer.gd" type="Script" id=5]
 
 [sub_resource type="Environment" id=1]
 background_mode = 1
 ambient_light_color = Color( 1, 1, 1, 1 )
-
-[sub_resource type="SphereMesh" id=2]
-rings = 64
-
-[sub_resource type="CylinderMesh" id=3]
-
-[sub_resource type="SpatialMaterial" id=4]
-albedo_color = Color( 0.760784, 0.0509804, 0.0509804, 1 )
 
 [node name="Universe" type="Spatial"]
 script = ExtResource( 1 )
 
 [node name="DirectionalLight" type="DirectionalLight" parent="."]
 
-[node name="Planet" type="StaticBody" parent="."]
+[node name="Icosphere" type="Spatial" parent="."]
 script = ExtResource( 2 )
 
-[node name="Camera Container" type="Spatial" parent="Planet"]
-editor/display_folded = true
+[node name="Camera Container" type="Spatial" parent="Icosphere"]
 
-[node name="Camera" type="Camera" parent="Planet/Camera Container"]
+[node name="Camera" type="Camera" parent="Icosphere/Camera Container"]
 transform = Transform( -0.05, 0, 4.39468e-09, 0, 0.05, 0, -4.39468e-09, 0, -0.05, 0, 0, -40 )
 environment = SubResource( 1 )
+fov = 90.0
 far = 1000.0
 script = ExtResource( 3 )
-
-[node name="MeshInstance" type="MeshInstance" parent="Planet"]
-visible = false
-mesh = SubResource( 2 )
-material/0 = null
-
-[node name="North Pole" type="MeshInstance" parent="."]
-transform = Transform( 0.1, 0, 0, 0, 10, 0, 0, 0, 0.1, 0, 20, 0 )
-visible = false
-mesh = SubResource( 3 )
-material/0 = SubResource( 4 )
-
-[node name="South Pole" type="MeshInstance" parent="."]
-transform = Transform( 0.1, 0, 0, 0, 10, 0, 0, 0, 0.1, 0, -20, 0 )
-visible = false
-mesh = SubResource( 3 )
-material/0 = null
 
 [node name="Control" parent="." instance=ExtResource( 4 )]
 visible = false
@@ -57,3 +33,6 @@ margin_left = 0.568848
 margin_top = -0.568802
 margin_right = 0.568848
 margin_bottom = -0.568848
+
+[node name="Line Drawer" type="Spatial" parent="."]
+script = ExtResource( 5 )
