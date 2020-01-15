@@ -7,6 +7,8 @@ var material: SpatialMaterial = load("res://Materials/Default.tres")
 var tri_centers: Array = []
 var arr_mesh: ArrayMesh = ArrayMesh.new()
 
+#An array of dictionaries holding the properties of all triangles in the mesh.
+
 const X: float = 0.525731112119133606 
 const Z: float = 0.850650808352039932
 
@@ -98,18 +100,10 @@ var icosphere_verts = [
 	Vector3(-Z, -X, 0.0)
 ]	
 
-func debug_draw_normals() -> void:
-	var arr: Array = []
-	for i in range(tri_centers.size()):
-		arr.append(tri_centers[i])
-		arr.append(tri_centers[i] + 2*surface_normals[i])
-	get_node("/root/Universe/Line Drawer").draw_lines(arr, Color(1, 0, 0))	
-
 func create_icosphere(arrays: Array, arr_mesh: ArrayMesh, mat: SpatialMaterial) -> void:
 	#Setting up ArrayMesh
 	arr_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	calculate_surface_normals()
-	debug_draw_normals()
 	#Setting up MeshInstance
 	var mesh_inst: MeshInstance = MeshInstance.new()
 	mesh_inst.name = "IcoMeshInstance"
@@ -133,12 +127,16 @@ func update_icosphere(arr_mesh: ArrayMesh, mat: SpatialMaterial, vert_arr: PoolV
 
 
 #Returns a position Vector3 holding the center of the triangle at index idx.
-func get_tri_center(idx: int) -> Vector3:	
-	return tri_centers[idx/3]
+func get_tri_center(tri_idx: int) -> Vector3:	
+	return tri_centers[tri_idx]
+
+
+func get_tri_count() -> int:
+	return self.verts.size() / 3
 
 
 func get_surface_normal(tri_idx: int) -> Vector3:
-	return surface_normals[tri_idx/3]	
+	return surface_normals[tri_idx]	
 
 
 """
@@ -149,7 +147,7 @@ Returns an int Array containing the indices of the 3 triangles adjacent to the t
 func get_adj_tri_indices(tri_idx: int) -> Array:
 	var adj_tri_indices: Array = []
 	var tris_found: int = 0
-	var tri_verts: Array = [verts[tri_idx], verts[tri_idx+1], verts[tri_idx+2]] 
+	var tri_verts: Array = [verts[tri_idx*3], verts[tri_idx*3+1], verts[tri_idx*3+2]] 
 	for i in range(0, verts.size(), 3):
 		if tris_found == 3:
 			break
@@ -160,7 +158,7 @@ func get_adj_tri_indices(tri_idx: int) -> Array:
 				if verts[i+j] == tri_verts[0] || verts[i+j] == tri_verts[1] || verts[i+j] == tri_verts[2]:
 					count += 1
 			if count == 2: #If 2 vertices are shared between triangles they must be neighbours.
-				adj_tri_indices.append(i)
+				adj_tri_indices.append(i/3) #i/3 since it's a triangle index
 				tris_found += 1	
 	return adj_tri_indices			
 
@@ -174,14 +172,14 @@ func calculate_surface_normals() -> void:
 
 #Returns the index of the triangle centre that is closest to the position hit.
 func find_closest_tri(hit: Vector3, tri_centers: Array) -> int:
-	var idx: int = 0
-	var smallest_dist: float = tri_centers[idx].distance_squared_to(hit)
+	var tri_idx: int = 0
+	var smallest_dist: float = tri_centers[tri_idx].distance_squared_to(hit)
 	for i in range(tri_centers.size()):
 		var temp: float = tri_centers[i].distance_squared_to(hit)
 		if temp < smallest_dist:
-			idx = i
+			tri_idx = i
 			smallest_dist = temp
-	return idx*3		
+	return tri_idx		
 	
 func subdivide_face(face_verts):
 	var new_face_verts: Array = []
@@ -244,6 +242,15 @@ func subdivide_triangle(tri_verts):
 
 	return new_tri_verts
 
+
+#Size of tri_cols must be the same as the number of triangles.	
+func set_ico_cols(tri_cols: Array) -> void:
+	for tri_idx in range(tri_cols.size()):
+		self.cols[tri_idx*3] = tri_cols[tri_idx]
+		self.cols[tri_idx*3+1] = tri_cols[tri_idx]
+		self.cols[tri_idx*3+2] = tri_cols[tri_idx]
+	self.update_icosphere(self.arr_mesh, self.material, self.verts, self.cols)	
+
 func _ready() -> void:
 
 	for i in range(0, icosphere_verts.size(), 3):
@@ -251,20 +258,18 @@ func _ready() -> void:
 		face_verts.append(icosphere_verts[i])
 		face_verts.append(icosphere_verts[i+1])
 		face_verts.append(icosphere_verts[i+2])
-		for i in range(2):
+		for i in range(3):
 			face_verts = subdivide_face(face_verts)
 		verts += face_verts
 	
+	for i in range(verts.size()):
+		cols.append(Color(0, 0, 0))	
+	
 	for i in range(0, verts.size()):
-		verts[i] *= 20	
-	verts = boost_vertices(verts, 0.05, 1.2)
-	tri_centers = find_tri_centers(verts)
+		verts[i] *= 40	
+	verts = boost_vertices(verts, 0.05, 1.05)
 
-	for i in range(0,verts.size(),3):
-		var col: Color = Color.from_hsv(0, 0.0, randf())
-		cols.append(col)
-		cols.append(col)
-		cols.append(col)
+	tri_centers = find_tri_centers(verts)
 	#Settings up arrays
 
 	var arrays = []
@@ -275,32 +280,26 @@ func _ready() -> void:
 	create_icosphere(arrays, arr_mesh, material)
 
 func _physics_process(delta: float) -> void:
+	var hit: Vector3 = get_node("../Camera Container/Camera").get_object_under_mouse().get("position")
 	if Input.is_action_just_pressed("left_click"):
-		var hit: Vector3 = get_node("Camera Container/Camera").get_object_under_mouse().get("position")
-		var hit_normal: Vector3 = get_node("Camera Container/Camera").get_object_under_mouse().get("normal")
+		var hit_normal: Vector3 = get_node("../Camera Container/Camera").get_object_under_mouse().get("normal")
 		if (hit != null):
-			var idx: int = find_closest_tri(hit, tri_centers)
-			var rand_col: Color = Color(randf(), randf(), randf())
-
-			cols[idx] = rand_col
-			cols[idx+1] = rand_col
-			cols[idx+2] = rand_col
-
-			var neighbours: Array = get_adj_tri_indices(idx)
-			for i in range(neighbours.size()):
-				var c: Color = Color(randf(), randf(), randf())
-				cols[neighbours[i]] = c	
-				cols[neighbours[i]+1] = c
-				cols[neighbours[i]+2] = c
-
-			update_icosphere(arr_mesh, material, verts, cols)
+			var tri_idx: int = find_closest_tri(hit, tri_centers)
 
 			var foo: Spatial = crop.instance()
-			get_node("/root/Universe").add_child(foo)
-			foo.set_tri_idx(idx)
+			self.get_parent().add_child(foo)
+			foo.set_tri_idx(tri_idx)
+			self.get_parent().set_tri_info(tri_idx, "occupied", 1)
 			foo.init_crop()
-			foo.translate(get_tri_center(idx))
+			foo.translate(get_tri_center(tri_idx))
 			var dir: Vector3 = foo.tri_normal.cross(Vector3.ONE)
 			foo.look_at(foo.translation + dir * 100, foo.tri_normal)
 			foo.set_mesh()
+
+	elif Input.is_action_just_pressed("right_click"):
+		var tri_idx: int = find_closest_tri(hit, self.tri_centers)
+		var attribs: Array = get_parent().get_tri_attribute_values(tri_idx)
+
+
+
 

@@ -23,9 +23,9 @@ func _physics_process(delta: float) -> void:
 	if Input.is_action_pressed("move_left"):
 		get_parent().rotate_object_local(Vector3.DOWN, MOVE_SPEED * delta)
 	if Input.is_action_pressed("move_up"):
-		get_parent().rotate_object_local(Vector3.RIGHT, MOVE_SPEED * delta)
-	if Input.is_action_pressed("move_down"):
 		get_parent().rotate_object_local(Vector3.LEFT, MOVE_SPEED * delta)
+	if Input.is_action_pressed("move_down"):
+		get_parent().rotate_object_local(Vector3.RIGHT, MOVE_SPEED * delta)
 	if Input.is_action_pressed("zoom_in"):
 		translate(Vector3.FORWARD * ZOOM_SPEED * delta)
 	if Input.is_action_pressed("zoom_out"):
