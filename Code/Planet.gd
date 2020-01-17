@@ -13,7 +13,7 @@ func _ready() -> void:
 	var arr: Array = []
 	for i in range(self.tri_attributes.size()):
 		var f: float = self.tri_attributes[i].get("temp")
-		f = range_lerp(f, -5, 35, 1, 0)
+		f = range_lerp(f, -20, 40, 1, 0)
 		arr.append(Color.from_hsv(0.5 * f, 0.8, 0.75))
 	self.get_node("Icosphere").set_ico_cols(arr)
 
@@ -32,6 +32,8 @@ func init_tri_attributes(tri_attributes: Array, tri_count: int) -> void:
 		var d: Dictionary = {
 			"temp" : rng.randfn(15, 5)
 		}
+		if i <= 63:
+			d["temp"] = rng.randfn(0, 5)
 		tri_attributes.append(d)	
 
 func get_tri_info(tri_idx: int, prop_name: String):
@@ -49,6 +51,7 @@ func set_tri_attribute(tri_idx: int, attrib_name: String, val) -> void:
 func get_tri_attribute(tri_idx: int, attrib_name: String):
 	return(self.tri_attributes[tri_idx].get(attrib_name))
 
-func get_tri_attribute_values(tri_idx: int) -> Array:
-	return self.tri_attributes[tri_idx].values()	
+
+func get_tri_attributes(tri_idx: int) -> Array:
+	return self.tri_attributes[tri_idx]	
 

@@ -298,7 +298,8 @@ func _physics_process(delta: float) -> void:
 
 	elif Input.is_action_just_pressed("right_click"):
 		var tri_idx: int = find_closest_tri(hit, self.tri_centers)
-		var attribs: Array = get_parent().get_tri_attribute_values(tri_idx)
+		var attribs: Array = get_parent().get_tri_attributes(tri_idx).values()
+		print(attribs)
 
 
 

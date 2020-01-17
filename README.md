@@ -1,5 +1,15 @@
 # shizen
 
+## v0.08a
+
+* Refactored a lot in the CropController.gd script, namely how crop attributes work.
+* Triangles can now have unique "attributes" that affect crop success.
+* Crop and triangle attributes now use a normal distribution instead of pure random assignment.
+* Triangles are now coloured based on their temperature.
+* Added some crop colours (no longer created 100s of SpatialMaterials, should speed up performance a little).
+* Fixed bug where crop children couldn't go on their parent's children (wasn't actually fixed in v0.07a).
+
+
 ## v0.07a
 
 * Multiple crops can no longer grow on a single triangle.
