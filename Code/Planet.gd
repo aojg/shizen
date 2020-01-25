@@ -13,8 +13,10 @@ func _ready() -> void:
 	var arr: Array = []
 	for i in range(self.tri_attributes.size()):
 		var f: float = self.tri_attributes[i].get("temp")
-		f = range_lerp(f, -20, 40, 1, 0)
-		arr.append(Color.from_hsv(0.5 * f, 0.8, 0.75))
+		#f = range_lerp(f, -20, 40, 1, 0)
+		#arr.append(Color.from_hsv(0.5 * f, 0.8, 0.75))
+		var c: Color = Color(randf(), randf(), randf())
+		arr.append(c)	
 	self.get_node("Icosphere").set_ico_cols(arr)
 
 #Initialises an array of dictionaries which holds properties of mesh triangles.
@@ -33,7 +35,7 @@ func init_tri_attributes(tri_attributes: Array, tri_count: int) -> void:
 			"temp" : rng.randfn(15, 5)
 		}
 		if i <= 63:
-			d["temp"] = rng.randfn(0, 5)
+			d["temp"] = 40 + (i/10)
 		tri_attributes.append(d)	
 
 func get_tri_info(tri_idx: int, prop_name: String):

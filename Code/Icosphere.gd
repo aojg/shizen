@@ -12,13 +12,14 @@ var arr_mesh: ArrayMesh = ArrayMesh.new()
 const X: float = 0.525731112119133606 
 const Z: float = 0.850650808352039932
 
+var tri_neighbour_idces: Array = []
+
 var surface_normals: Array = []
 var cols: PoolColorArray = PoolColorArray()		
 var verts: PoolVector3Array = PoolVector3Array()	
 
 #Vector3 array containing the vertices of an icosphere.
 var icosphere_verts = [
-
 	Vector3(-X, 0.0, Z), 
 	Vector3(0.0, Z, X),
 	Vector3(X, 0.0, Z),
@@ -113,6 +114,9 @@ func create_icosphere(arrays: Array, arr_mesh: ArrayMesh, mat: SpatialMaterial) 
 	add_child(mesh_inst)
 	mesh_inst.create_trimesh_collision()
 
+
+func get_neighbours(tri_idx: int):
+	return self.tri_neighbour_idces[tri_idx]	
 
 func update_icosphere(arr_mesh: ArrayMesh, mat: SpatialMaterial, vert_arr: PoolVector3Array, col_arr: PoolColorArray) -> void:
 	var arrays: Array = []
@@ -279,28 +283,21 @@ func _ready() -> void:
 
 	create_icosphere(arrays, arr_mesh, material)
 
+	for i in range(tri_centers.size()):
+		#We create an array containing the adjacent triangle indices for all triangles in the mesh.
+		self.tri_neighbour_idces.append(self.get_adj_tri_indices(i))
+
 func _physics_process(delta: float) -> void:
 	var hit: Vector3 = get_node("../Camera Container/Camera").get_object_under_mouse().get("position")
 	if Input.is_action_just_pressed("left_click"):
-		var hit_normal: Vector3 = get_node("../Camera Container/Camera").get_object_under_mouse().get("normal")
 		if (hit != null):
 			var tri_idx: int = find_closest_tri(hit, tri_centers)
-
-			var foo: Spatial = crop.instance()
-			self.get_parent().add_child(foo)
-			foo.set_tri_idx(tri_idx)
+			self.get_parent().get_node("../Trees").add_tree(tri_idx, [1])
+			self.get_parent().get_node("../Trees").draw_multimesh()
 			self.get_parent().set_tri_info(tri_idx, "occupied", 1)
-			foo.init_crop()
-			foo.translate(get_tri_center(tri_idx))
-			var dir: Vector3 = foo.tri_normal.cross(Vector3.ONE)
-			foo.look_at(foo.translation + dir * 100, foo.tri_normal)
-			foo.set_mesh()
 
 	elif Input.is_action_just_pressed("right_click"):
-		var tri_idx: int = find_closest_tri(hit, self.tri_centers)
-		var attribs: Array = get_parent().get_tri_attributes(tri_idx).values()
-		print(attribs)
-
+		print("tri_idx: " + str(self.find_closest_tri(hit, self.tri_centers)))
 
 
 

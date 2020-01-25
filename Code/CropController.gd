@@ -27,6 +27,8 @@ var neighbour_indices: Array = []
 #These are the Vector3 positions of the triangles adjacent to this crop.
 var neighbour_positions: Array = []
 
+var generation: int = 0
+
 
 var ico: Spatial = null
 

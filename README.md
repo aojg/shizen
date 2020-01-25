@@ -1,5 +1,10 @@
 # shizen
 
+## v0.09a 
+Made large changes to how crops work. They're not fully re-implemented yet. There include:
+* Utilising MultiMeshes for better runtime performance.
+* Instead of calculating adjacent triangles at runtime they're now calculated for all triangles upon game launch. This massively improves performance.
+
 ## v0.08a
 
 * Refactored a lot in the CropController.gd script, namely how crop attributes work.
