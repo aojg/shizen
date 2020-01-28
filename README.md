@@ -1,5 +1,15 @@
 # shizen
 
+## v0.10a
+* Reverted changes with MultiMeshes. 
+* A bit of project refactoring has been done, i.e. renaming and such.
+* Implemented an InputManager.gd script that handles input.
+* Trees no longer spread freely, instead they must be planted.
+* Trees can now be removed from the planet.
+* Once fully grown trees will not die. They have to be removed manually.
+* Working on making the project feel more like a game and less like a simulation.
+
+
 ## v0.09a 
 Made large changes to how crops work. They're not fully re-implemented yet. There include:
 * Utilising MultiMeshes for better runtime performance.

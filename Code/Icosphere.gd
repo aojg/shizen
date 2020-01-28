@@ -1,6 +1,6 @@
 extends Spatial
 
-var crop: Resource = load("res://Scenes/Crop.tscn")
+var tree: Resource = load("res://Scenes/Tree.tscn")
 var material: SpatialMaterial = load("res://Materials/Default.tres")
 
 #Vector3 array containing the centres of all mesh triangles.
@@ -12,14 +12,15 @@ var arr_mesh: ArrayMesh = ArrayMesh.new()
 const X: float = 0.525731112119133606 
 const Z: float = 0.850650808352039932
 
-var tri_neighbour_idces: Array = []
-
 var surface_normals: Array = []
 var cols: PoolColorArray = PoolColorArray()		
 var verts: PoolVector3Array = PoolVector3Array()	
 
+var tri_neighbour_idces: Array = []
+
 #Vector3 array containing the vertices of an icosphere.
 var icosphere_verts = [
+
 	Vector3(-X, 0.0, Z), 
 	Vector3(0.0, Z, X),
 	Vector3(X, 0.0, Z),
@@ -115,9 +116,6 @@ func create_icosphere(arrays: Array, arr_mesh: ArrayMesh, mat: SpatialMaterial) 
 	mesh_inst.create_trimesh_collision()
 
 
-func get_neighbours(tri_idx: int):
-	return self.tri_neighbour_idces[tri_idx]	
-
 func update_icosphere(arr_mesh: ArrayMesh, mat: SpatialMaterial, vert_arr: PoolVector3Array, col_arr: PoolColorArray) -> void:
 	var arrays: Array = []
 	arrays.resize(ArrayMesh.ARRAY_MAX)
@@ -175,11 +173,11 @@ func calculate_surface_normals() -> void:
 
 
 #Returns the index of the triangle centre that is closest to the position hit.
-func find_closest_tri(hit: Vector3, tri_centers: Array) -> int:
+func find_closest_tri(hit: Vector3) -> int:
 	var tri_idx: int = 0
-	var smallest_dist: float = tri_centers[tri_idx].distance_squared_to(hit)
-	for i in range(tri_centers.size()):
-		var temp: float = tri_centers[i].distance_squared_to(hit)
+	var smallest_dist: float = self.tri_centers[tri_idx].distance_squared_to(hit)
+	for i in range(self.tri_centers.size()):
+		var temp: float = self.tri_centers[i].distance_squared_to(hit)
 		if temp < smallest_dist:
 			tri_idx = i
 			smallest_dist = temp
@@ -281,23 +279,22 @@ func _ready() -> void:
 	arrays[ArrayMesh.ARRAY_VERTEX] = verts
 	arrays[ArrayMesh.ARRAY_COLOR] = cols
 
-	create_icosphere(arrays, arr_mesh, material)
+	self.create_icosphere(arrays, arr_mesh, material)
 
-	for i in range(tri_centers.size()):
-		#We create an array containing the adjacent triangle indices for all triangles in the mesh.
-		self.tri_neighbour_idces.append(self.get_adj_tri_indices(i))
+	#for i in range(verts.size() / 3):
+		#self.tri_neighbour_idces.append(self.get_adj_tri_indices(i))
+
 
 func _physics_process(delta: float) -> void:
-	var hit: Vector3 = get_node("../Camera Container/Camera").get_object_under_mouse().get("position")
-	if Input.is_action_just_pressed("left_click"):
-		if (hit != null):
-			var tri_idx: int = find_closest_tri(hit, tri_centers)
-			self.get_parent().get_node("../Trees").add_tree(tri_idx, [1])
-			self.get_parent().get_node("../Trees").draw_multimesh()
-			self.get_parent().set_tri_info(tri_idx, "occupied", 1)
-
-	elif Input.is_action_just_pressed("right_click"):
-		print("tri_idx: " + str(self.find_closest_tri(hit, self.tri_centers)))
+	pass
+	#var hit: Vector3 = get_node("../Camera Container/Camera").get_object_under_mouse().get("position")
+	#if Input.is_action_just_pressed("left_click"):
+		#if (hit != null):
+			#var tri_idx: int = find_closest_tri(hit, tri_centers)
+			#var foo: Spatial = tree.instance()
+			#self.get_parent().add_child(foo)
+			#self.get_parent().set_tri_info(tri_idx, "occupied", 1)
+			#foo.init_tree(tri_idx)
 
 
 
