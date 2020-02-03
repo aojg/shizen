@@ -1,5 +1,20 @@
 # shizen
 
+## v0.11a
+
+**Changelog**
+
+* Added some UI that displays information about triangles on hover, such as temperature.
+* Added support for different temperature modes including celsius, fahrenheit, and kelvin. 
+* Added two input modes: inspection and plant mode. In inspection mode you can inspect triangles to obtain certain information about their properties, and in plant mode you can plant and harvest trees.
+* Added ability to grow multiple trees at once in plant mode.
+* Added mesh highlighting which makes the triangle that your mouse is over a different colour.
+
+**Bug Fixes**
+
+* Fixed an issue where you could zoom inside the planet and zoom away from the planet forever. Zoom distances are now capped to prevent this.
+
+
 ## v0.10a
 * Reverted changes with MultiMeshes. 
 * A bit of project refactoring has been done, i.e. renaming and such.

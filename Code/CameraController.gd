@@ -2,6 +2,23 @@ extends Spatial
 
 var move_speed: float = 5.0
 var zoom_speed: float = 200.0
+
+var max_dist: float = 200.0
+var min_dist: float = 45.0
+
+func can_zoom_out() -> bool:
+	var t: float = $Camera.translation.z
+	if t < self.max_dist:
+		return true
+	return false	
+
+	
+func can_zoom_in() -> bool:
+	var t: float = $Camera.translation.z
+	if t > self.min_dist:
+		return true
+	return false	
+
 	
 func get_object_under_mouse() -> Dictionary:
 	var mouse_pos = self.get_viewport().get_mouse_position()

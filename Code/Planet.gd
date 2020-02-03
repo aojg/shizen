@@ -22,9 +22,26 @@ func init_tri_info(tri_info: Array, tri_count: int) -> void:
 	for i in range(tri_count):
 		var d: Dictionary = {
 			"occupied" : 0,
-			"plnat" : null
+			"plant" : null
 		}
 		tri_info.append(d)
+
+		
+func inspect_triangle(tri_idx: int, temp_mode: String = "c") -> String:
+	var s: String = ""
+	var t: float = self.tri_attributes[tri_idx]["temp"]
+	var t_string: String = ""
+	match temp_mode:
+		"f":
+			t_string = str(t * 1.8 + 32) + "°F"
+		"c":
+			t_string = str(t) + "°C"	
+		"k":
+			t_string = str(t + 273.15) + "K"	
+			
+	s += "Temperature: " + t_string + "\n"
+	return s
+		
 
 func init_tri_attributes(tri_attributes: Array, tri_count: int) -> void:
 	var rng: RandomNumberGenerator = RandomNumberGenerator.new()

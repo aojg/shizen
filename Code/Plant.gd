@@ -24,8 +24,11 @@ var tri_idx: int = -1
 #This is the surface normal of the triangle face that the crop is growing on.
 var tri_normal: Vector3 = Vector3.ZERO
 
+var ico: Spatial = null
+
 func _ready() -> void:
-	death_time = rand_range(0.5, 1.0)
+	self.ico = self.get_node("../Planet/Icosphere")
+	self.death_time = rand_range(0.5, 1.0)
 	self.plant_mats = init_plant_mat_array(self.plant_mats)
 
 
@@ -39,8 +42,8 @@ func init_plant_mat_array(arr: Array) -> Array:
 
 func init_tree(tri_idx: int) -> void:	
 	self.set_tri_idx(tri_idx)
-	Planet.set_tri_info(tri_idx, "plant", self)
-	self.translate(Planet.get_node("Icosphere").get_tri_center(tri_idx))
+	self.ico.get_parent().set_tri_info(tri_idx, "plant", self)
+	self.translate(self.ico.get_tri_center(tri_idx))
 	var dir: Vector3 = self.tri_normal.cross(Vector3.ONE)
 	self.look_at(translation + dir * 100.0, self.tri_normal)
 	self.set_mesh()
@@ -48,12 +51,12 @@ func init_tree(tri_idx: int) -> void:
 
 func set_tri_idx(tri_idx: int) -> void:
 	self.tri_idx = tri_idx
-	self.tri_normal = Planet.get_node("Icosphere").get_surface_normal(tri_idx)
+	self.tri_normal = self.ico.get_surface_normal(tri_idx)
 
 
 func set_mesh() -> void:
 	var mat: SpatialMaterial = SpatialMaterial.new()
-	mat.albedo_color = Color(1, 0, 0)
+	mat.albedo_color = Color.from_hsv(0.34, rand_range(0.5, 0.6), rand_range(0.35, 0.75))
 	$MeshInstance.set_surface_material(0, mat)
 	$MeshInstance.set_surface_material(1, mat)
 	
@@ -87,7 +90,7 @@ func can_grow(tri_idx: int) -> bool:
 #To be called when wanting to destroy a crop.
 func kill() -> void:
 	if self.tri_idx != -1:
-		Planet.set_tri_info(self.tri_idx, "plant", null)
+		self.ico.get_parent().set_tri_info(self.tri_idx, "plant", null)
 	self.queue_free() #Queue for deletion.
 
 
