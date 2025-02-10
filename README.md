@@ -1,6 +1,7 @@
 # shizen
 
-This is an old game prototype that runs on Godot v3.2.
+This is an old game prototype that runs on Godot v3.2. I don't plan on revisiting it, so thought I'd make the code public.
+
 [![demo_video](https://img.youtube.com/vi/HJakXZglo8Q/0.jpg)](https://www.youtube.com/watch?v=HJakXZglo8Q)
 
 ## v0.11a
