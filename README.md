@@ -1,5 +1,8 @@
 # shizen
 
+This is an old game prototype that runs on Godot v3.2.
+
+
 ## v0.11a
 
 **Changelog**
