@@ -2,6 +2,7 @@
 
 This is an old game prototype that runs on Godot v3.2.
 
+![shizen](https://rawgithubusercontent.com/eugenekingfish/shizen/blob/master/vid.mp4)
 
 ## v0.11a
 
