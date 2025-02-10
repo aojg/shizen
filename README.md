@@ -1,7 +1,7 @@
 # shizen
 
 This is an old game prototype that runs on Godot v3.2.
-![Watch the video](https://raw.githubusercontent.com/eugenekingfish/shizen/master//vid.mp4)
+[![demo_video](https://img.youtube.com/vi/HJakXZglo8Q/0.jpg)](https://www.youtube.com/watch?v=HJakXZglo8Q)
 
 ## v0.11a
 
